@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanska Glosor - Login & Save</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: #eef2f7; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 500px; text-align: center; padding: 20px; }
+
+        /* Login-Box */
+        #auth-section { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--primary); }
+        
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
+        input:focus { border-color: var(--accent); outline: none; }
+
+        .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-login { background: var(--accent); color: white; }
+        .btn-register { background: var(--primary); color: white; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* App-Innehåll */
+        .section { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); display: none; }
+        .nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .nav-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #eee; font-weight: bold; }
+        .nav-btn.active { background: var(--primary); color: white; }
+
+        /* Kortet */
+        .flip-card { width: 100%; height: 200px; perspective: 1000px; cursor: pointer; margin: 20px 0; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 20px; font-size: 1.8rem; font-weight: bold; border: 4px solid var(--primary); }
+        .flip-card-back { background: var(--primary); color: white; transform: rotateY(180deg); }
+
+        .special-chars { display: flex; justify-content: center; gap: 5px; margin: 10px 0; flex-wrap: wrap; }
+        .char-btn { width: 40px; height: 40px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: white; }
+        
+        .list-item { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="auth-section">
+        <h1>¡Bienvenido! 🇪🇸</h1>
+        <div class="input-group">
+            <label>Användarnamn</label>
+            <input type="text" id="user-field" placeholder="Välj namn">
+        </div>
+        <div class="input-group">
+            <label>Lösenord</label>
+            <input type="password" id="pass-field" placeholder="Välj lösenord">
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-login" onclick="login()">Logga in</button>
+            <button class="btn btn-register" onclick="register()">Skapa konto</button>
+        </div>
+    </div>
+
+    <div id="main-app" style="display: none;">
+        <h3 id="user-display"></h3>
+        <div class="nav">
+            <button id="n-create" class="nav-btn active" onclick="tab('create')">Hantera</button>
+            <button id="n-play" class="nav-btn" onclick="tab('play')">Plugga</button>
+        </div>
+
+        <div id="tab-create">
+            <input type="text" id="q" placeholder="Svenska">
+            <input type="text" id="a" placeholder="Spanska">
+            <div class="special-chars">
+                <button class="char-btn" onclick="ins('á')">á</button>
+                <button class="char-btn" onclick="ins('é')">é</button>
+                <button class="char-btn" onclick="ins('í')">í</button>
+                <button class="char-btn" onclick="ins('ó')">ó</button>
+                <button class="char-btn" onclick="ins('ú')">ú</button>
+                <button class="char-btn" onclick="ins('ñ')">ñ</button>
+            </div>
+            <button class="btn btn-login" style="width:100%;" onclick="add()">Spara Ord</button>
+            <div id="list" style="margin-top:20px; text-align:left;"></div>
+        </div>
+
+        <div id="tab-play" style="display:none;">
+            <div class="flip-card" id="card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front" id="front">Fråga</div>
+                    <div class="flip-card-back" id="back">Svar</div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content: space-between; align-items:center;">
+                <button class="btn" onclick="prev()">⬅️</button>
+                <span id="count">0 / 0</span>
+                <button class="btn" onclick="next()">➡️</button>
+            </div>
+        </div>
+
+        <p onclick="location.reload()" style="color:red; cursor:pointer; margin-top:30px; font-size:0.8rem;">Logga ut</p>
+    </div>
+</div>
+
+<script>
+    let activeUser = "";
+    let myCards = [];
+    let idx = 0;
+
+    // --- LOGIN & REGISTER ---
+    function register() {
+        const u = document.getElementById('user-field').value.toLowerCase().trim();
+        const p = document.getElementById('pass-field').value.trim();
+        if(!u || !p) return alert("Fyll i allt!");
+
+        let users = JSON.parse(localStorage.getItem('users_db')) || {};
+        if(users[u]) return alert("Användaren finns redan!");
+
+        users[u] = p;
+        localStorage.setItem('users_db', JSON.stringify(users));
+        alert("Konto skapat! Du kan nu logga in.");
+    }
+
+    function login() {
+        const u = document.getElementById('user-field').value.toLowerCase().trim();
+        const p = document.getElementById('pass-field').value.trim();
+        let users = JSON.parse(localStorage.getItem('users_db')) || {};
+
+        if(users[u] && users[u] === p) {
+            activeUser = u;
+            startApp();
+        } else {
+            alert("Fel namn eller lösenord!");
+        }
+    }
+
+    function startApp() {
+        document.getElementById('auth-section').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('user-display').innerText = "Användare: " + activeUser;
+        myCards = JSON.parse(localStorage.getItem('cards_' + activeUser)) || [];
+        render();
+    }
+
+    // --- APP FUNKTIONER ---
+    function ins(c) { document.getElementById('a').value += c; document.getElementById('a').focus(); }
+
+    function tab(t) {
+        document.getElementById('tab-create').style.display = t === 'create' ? 'block' : 'none';
+        document.getElementById('tab-play').style.display = t === 'play' ? 'block' : 'none';
+        document.getElementById('n-create').classList.toggle('active', t === 'create');
+        document.getElementById('n-play').classList.toggle('active', t === 'play');
+        if(t === 'play') update();
+    }
+
+    function add() {
+        const qv = document.getElementById('q').value;
+        const av = document.getElementById('a').value;
+        if(qv && av) {
+            myCards.push({q: qv, a: av});
+            localStorage.setItem('cards_' + activeUser, JSON.stringify(myCards));
+            document.getElementById('q').value = ""; document.getElementById('a').value = "";
+            render();
+        }
+    }
+
+    function render() {
+        const div = document.getElementById('list');
+        div.innerHTML = myCards.map((c, i) => `
+            <div class="list-item">
+                <span>${c.a} = ${c.q}</span>
+                <button onclick="del(${i})" style="border:none; color:red; cursor:pointer;">X</button>
+            </div>
+        `).join('');
+    }
+
+    function del(i) {
+        myCards.splice(i, 1);
+        localStorage.setItem('cards_' + activeUser, JSON.stringify(myCards));
+        render();
+    }
+
+    function update() {
+        document.getElementById('card').classList.remove('flipped');
+        if(myCards.length > 0) {
+            document.getElementById('front').innerText = myCards[idx].q;
+            document.getElementById('back').innerText = myCards[idx].a;
+            document.getElementById('count').innerText = `${idx + 1} / ${myCards.length}`;
+        } else {
+            document.getElementById('front').innerText = "Tomt";
+            document.getElementById('back').innerText = "Skapa ord först";
+        }
+    }
+
+    function next() { idx = (idx + 1) % myCards.length; update(); }
+    function prev() { idx = (idx - 1 + myCards.length) % myCards.length; update(); }
+</script>
+
+</body>
+</html>
